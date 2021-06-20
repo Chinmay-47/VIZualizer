@@ -1,37 +1,24 @@
 import os
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, Response
+from flask_cors import CORS, cross_origin
 
 viz = Flask(__name__)
+CORS(viz, support_credentials=True)
 
 
-@viz.route('/')
-def index():
-    return "Hello World!"
+@viz.route('/home/get-topics-list', methods=['GET'])
+@cross_origin(supports_credentials=True)
+def get_topics_list() -> Response:
+    """
+    :return: A list of topics and their corresponding subtopics.
+    """
 
+    topics = [topic.name for topic in os.scandir(os.getcwd()) if topic.is_dir() and topic.name != '__pycache__']
+    sub_topics = [[sub_topic.name for sub_topic in os.scandir(os.getcwd() + '/' + topic) if sub_topic.is_dir()
+                   and sub_topic.name != '__pycache__'] for topic in topics]
 
-@viz.route('/home/supervised/list', methods=['GET'])
-def supervised_list():
-    sup_list = os.listdir('Supervised_Learning/')
-    return jsonify([x for x in sup_list if x != '__init__.py'])
-
-
-@viz.route('/home/unsupervised/list', methods=['GET'])
-def unsupervised_list():
-    unsup_list = os.listdir('Unsupervised_Learning/')
-    return jsonify([x for x in unsup_list if x != '__init__.py'])
-
-
-@viz.route('/home/reinforcement/list', methods=['GET'])
-def reinforcement_list():
-    reinf_list = os.listdir('Reinforcement_Learning/')
-    return jsonify([x for x in reinf_list if x != '__init__.py'])
-
-
-@viz.route('/home/neural/list', methods=['GET'])
-def neural_list():
-    neur_list = os.listdir('Neural_Networks/')
-    return jsonify([x for x in neur_list if x != '__init__.py'])
+    return jsonify(list(zip(topics, sub_topics)))
 
 
 if __name__ == '__main__':
