@@ -34,4 +34,4 @@ def neural_list():
 
 
 if __name__ == '__main__':
-    viz.run(host='0.0.0.0', debug=True, port=5000)
+    viz.run(host='0.0.0.0', debug=True, port=3001)
