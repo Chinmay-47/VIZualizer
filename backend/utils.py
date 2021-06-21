@@ -53,6 +53,19 @@ class DataPointsGenerator:
         """
         np.random.seed(seed=self.__random_state)
 
+    def gen_float(self, randomize: Optional[bool] = False) -> float:
+        """
+        Generates a float between 0 and 1.
+
+        :param randomize: Will generate a new float if set to True.
+        :return: A float between 0 and 1 excluding 1.
+        """
+
+        if not randomize:
+            self.__set_seed()
+
+        return np.random.random()
+
     def gen_normal_1D(self, no_of_points: Optional[int] = 1, randomize: Optional[bool] = False) -> np.ndarray:
         """
         Generates random 1-Dimensional Data.
