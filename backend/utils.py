@@ -4,7 +4,7 @@ import numpy as np
 
 
 class DataPointsGenerator:
-    """Generates Data points of different dimensions and distributions."""
+    """DataPointsGenerator: Generates Data points of different dimensions and distributions."""
 
     __random_state: int = 42
 
@@ -20,6 +20,24 @@ class DataPointsGenerator:
             raise TypeError("Random State needs to be an Integer.")
 
         cls.__random_state = random_state
+
+    def __setattr__(self, key, value):
+        if key == '__random_state':
+            raise AttributeError("The value of random state has already been set. "
+                                 "Use the 'set_random_state' method to re-set it to a new value.")
+        self.__dict__[key] = value
+
+    def __delattr__(self, key):
+        if key == '__random_state':
+            raise AttributeError('The random state attribute can not be deleted')
+        else:
+            del self.__dict__[key]
+
+    def __str__(self):
+        return self.__doc__
+
+    def __repr__(self):
+        return self.__class__.__name__ + "()"
 
     @property
     def random_state(self):
