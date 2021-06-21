@@ -6,7 +6,7 @@ import numpy as np
 class DataPointsGenerator:
     """DataPointsGenerator: Generates Data points of different dimensions and distributions."""
 
-    __random_state: int = 42
+    __random_state: int = 0
 
     @classmethod
     def set_random_state(cls, random_state: int) -> None:
