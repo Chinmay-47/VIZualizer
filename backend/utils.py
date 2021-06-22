@@ -189,3 +189,27 @@ class DataPointsGenerator:
         y_vals = (slope * x_vals) + intercept
 
         return np.array(list(zip(x_vals, y_vals)))
+
+    @staticmethod
+    def gen_line_given_x(x_values: Union[np.ndarray, list], slope: Union[float, int],
+                         intercept: Union[float, int]) -> np.ndarray:
+        """
+        Generates a line for a given set of values for x with a slope and intercept as y = mx + c
+
+        :param x_values: Values of x to use to compute y
+        :param slope: Slope of the line to construct.
+        :param intercept: Intercept of the line to construct.
+        :return: A numpy array of points (x, y) on the line.
+        """
+
+        if not isinstance(x_values, (np.ndarray, list)):
+            raise TypeError("X values should be either a list or a numpy array.")
+        if not isinstance(slope, (float, int)):
+            raise TypeError("Slope should be either a float or an integer.")
+        if not isinstance(intercept, (float, int)):
+            raise TypeError("Intercept should be either a float or an integer.")
+
+        x_vals = x_values
+        y_vals = (slope * x_values) + intercept
+
+        return np.array(list(zip(x_vals, y_vals)))
