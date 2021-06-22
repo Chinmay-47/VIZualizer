@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, Tuple
 
 import numpy as np
 
@@ -53,18 +53,30 @@ class DataPointsGenerator:
         """
         np.random.seed(seed=self.__random_state)
 
-    def gen_float(self, randomize: Optional[bool] = False) -> float:
+    def gen_float(self, numrange: Tuple[Union[int, float], Union[int, float]] = (None, None),
+                  randomize: Optional[bool] = False) -> float:
         """
         Generates a float between 0 and 1.
 
+        :param numrange: Will set range between which the float is generated.
         :param randomize: Will generate a new float if set to True.
         :return: A float between 0 and 1 excluding 1.
         """
 
+        if not isinstance(numrange, tuple):
+            raise TypeError("The range should be a tuple of length 2. ie; (low, high) where low and high "
+                            "are integers or floats.")
+        if len(numrange) != 2:
+            raise ValueError("The range should be a tuple of length 2. ie; (low, high) where low and high "
+                             "are integers or floats.")
+
         if not randomize:
             self.__set_seed()
 
-        return np.random.random()
+        if numrange == (None, None):
+            return np.random.random()
+
+        return np.random.uniform(numrange[0], numrange[1])
 
     def gen_normal_1D(self, no_of_points: Optional[int] = 1, randomize: Optional[bool] = False) -> np.ndarray:
         """
@@ -138,9 +150,11 @@ class DataPointsGenerator:
             self.__set_seed()
 
         if not is_increasing:
-            return np.array([i + np.random.standard_normal() for i in reversed(range(no_of_points))])
+            return np.array([i + (np.random.uniform(1.5, 3) * np.random.standard_normal())
+                             for i in reversed(range(no_of_points))])
 
-        return np.array([i + np.random.standard_normal() for i in range(no_of_points)])
+        return np.array([i + (np.random.uniform(1.5, 3) * np.random.standard_normal())
+                         for i in range(no_of_points)])
 
     def gen_linear2D(self, no_of_points: Optional[int] = 1, is_increasing: Optional[bool] = True,
                      randomize: Optional[bool] = False) -> np.ndarray:
@@ -163,10 +177,12 @@ class DataPointsGenerator:
             self.__set_seed()
 
         if not is_increasing:
-            return np.array([np.array([i + np.random.standard_normal(), j + np.random.standard_normal()])
+            return np.array([np.array([i + (np.random.uniform(1.5, 3) * np.random.standard_normal()),
+                                       j + (np.random.uniform(1.5, 3) * np.random.standard_normal())])
                              for i, j in list(zip(range(no_of_points), reversed(range(no_of_points))))])
 
-        return np.array([np.array([i + np.random.standard_normal(), i + np.random.standard_normal()])
+        return np.array([np.array([i + (np.random.uniform(1.5, 3) * np.random.standard_normal()),
+                                   i + (np.random.uniform(1.5, 3) * np.random.standard_normal())])
                          for i in range(no_of_points)])
 
     @staticmethod
