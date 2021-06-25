@@ -1,6 +1,57 @@
+import os
+import time
+from functools import wraps
 from typing import Optional, Union, Tuple
 
+import matplotlib.pyplot as plt
 import numpy as np
+
+
+def clear_prev_plots(func):
+    """
+    Helper decorator to remove any previous matplotlib plots before function execution.
+    """
+
+    @wraps(func)
+    def inner(*args, **kwargs):
+        plt.cla()
+        plt.clf()
+        plt.close()
+        f = func(*args, **kwargs)
+        return f
+
+    return inner
+
+
+def set_default_labels(func):
+    """
+    Helper decorator to set default labels to X and Y axes for plots.
+    """
+
+    @wraps(func)
+    def inner(*args, **kwargs):
+        f = func(*args, **kwargs)
+        plt.xlabel("X-Axis")
+        plt.ylabel("Y-Axis")
+        return f
+
+    return inner
+
+
+def timer(func):
+    """
+    Helper decorator to time any function execution.
+    """
+
+    @wraps(func)
+    def inner(*args, **kwargs):
+        start = time.perf_counter()
+        f = func(*args, **kwargs)
+        os.system('echo "' + "Function '{}' took {} seconds".format(func.__name__,
+                                                                    round(time.perf_counter() - start, 5)) + '"')
+        return f
+
+    return inner
 
 
 class DataPointsGenerator:
