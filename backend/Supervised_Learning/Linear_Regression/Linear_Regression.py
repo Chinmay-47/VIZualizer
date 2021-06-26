@@ -188,47 +188,63 @@ class LinearRegressionVisualizer:
 
     @PlotUtils.set_default_labels
     @PlotUtils.clear_prev_plots
-    def show_data(self) -> None:
+    def show_data(self, return_fig: Optional[bool] = False) -> Optional[plt.figure]:
         """
         Shows a plot of the data points used to perform linear regression.
         """
 
+        fig, ax = plt.subplots()
         plt.style.use("ggplot")
-        plt.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
+        ax.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
+
+        if return_fig:
+            return fig
 
     @PlotUtils.set_default_labels
     @PlotUtils.clear_prev_plots
-    def show_initial_regression_line(self, include_data: Optional[bool] = True) -> None:
+    def show_initial_regression_line(self, include_data: Optional[bool] = True,
+                                     return_fig: Optional[bool] = False) -> Optional[plt.figure]:
         """
         Shows a plot of the initial regression line with or without data.
         """
 
+        fig, ax = plt.subplots()
         plt.style.use("ggplot")
         if include_data:
-            plt.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
-        plt.plot(list(zip(*self._initial_regression_line))[0],
-                 list(zip(*self._initial_regression_line))[1], c='blue')
+            ax.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
+        ax.plot(list(zip(*self._initial_regression_line))[0],
+                list(zip(*self._initial_regression_line))[1], c='blue')
+
+        if return_fig:
+            return fig
 
     @PlotUtils.set_default_labels
     @PlotUtils.clear_prev_plots
-    def show_current_regression_line(self, include_data: Optional[bool] = True) -> None:
+    def show_current_regression_line(self, include_data: Optional[bool] = True,
+                                     return_fig: Optional[bool] = False) -> Optional[plt.figure]:
         """
         Shows a plot of the current regression line with or without data.
         """
 
+        fig, ax = plt.subplots()
         plt.style.use("ggplot")
         if include_data:
             plt.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
         plt.plot(list(zip(*self.current_regression_line))[0],
                  list(zip(*self.current_regression_line))[1], c='blue')
 
+        if return_fig:
+            return fig
+
     @PlotUtils.set_default_labels
     @PlotUtils.clear_prev_plots
-    def show_regression_line_comparison(self, include_data: Optional[bool] = True) -> None:
+    def show_regression_line_comparison(self, include_data: Optional[bool] = True,
+                                        return_fig: Optional[bool] = False) -> Optional[plt.figure]:
         """
         Shows a plot of the current regression line with or without data.
         """
 
+        fig, ax = plt.subplots()
         plt.style.use("ggplot")
         if include_data:
             plt.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
@@ -239,17 +255,24 @@ class LinearRegressionVisualizer:
         plt.title("Initial Regression Line vs Trained Regression Line")
         plt.legend()
 
+        if return_fig:
+            return fig
+
     @PlotUtils.clear_prev_plots
-    def show_cost_history(self) -> None:
+    def show_cost_history(self, return_fig: Optional[bool] = False) -> Optional[plt.figure]:
         """
         Shows a plot of the cost through the history of training.
         """
 
+        fig, ax = plt.subplots()
         plt.style.use("ggplot")
-        plt.plot(list(range(len(self._cost_history))), self._cost_history, c='blue')
-        plt.title("Cost History")
-        plt.xlabel("Epochs")
-        plt.ylabel("Cost")
+        ax.plot(list(range(len(self._cost_history))), self._cost_history, c='blue')
+        ax.title("Cost History")
+        ax.xlabel("Epochs")
+        ax.ylabel("Cost")
+
+        if return_fig:
+            return fig
 
     @PlotUtils.clear_prev_plots
     def visualize(self, show_data: Optional[bool] = True, show_initial: Optional[bool] = True,
