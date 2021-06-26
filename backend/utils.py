@@ -7,35 +7,51 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def clear_prev_plots(func):
+class PlotUtils:
     """
-    Helper decorator to remove any previous matplotlib plots before function execution.
+    Helper class with methods and decorators for plotting related utilities.
     """
 
-    @wraps(func)
-    def inner(*args, **kwargs):
+    @staticmethod
+    def clear_prev_plots(func):
+        """
+        Helper decorator to remove any previous matplotlib plots before function execution.
+        """
+
+        @wraps(func)
+        def inner(*args, **kwargs):
+            plt.cla()
+            plt.clf()
+            plt.close()
+            f = func(*args, **kwargs)
+            return f
+
+        return inner
+
+    @staticmethod
+    def set_default_labels(func):
+        """
+        Helper decorator to set default labels to X and Y axes for matplotlib plots.
+        """
+
+        @wraps(func)
+        def inner(*args, **kwargs):
+            f = func(*args, **kwargs)
+            plt.xlabel("X-Axis")
+            plt.ylabel("Y-Axis")
+            return f
+
+        return inner
+
+    @staticmethod
+    def clear_plots() -> None:
+        """
+        Helper function to clear all matplotlib plots and figures.
+        """
+
         plt.cla()
         plt.clf()
-        plt.close()
-        f = func(*args, **kwargs)
-        return f
-
-    return inner
-
-
-def set_default_labels(func):
-    """
-    Helper decorator to set default labels to X and Y axes for plots.
-    """
-
-    @wraps(func)
-    def inner(*args, **kwargs):
-        f = func(*args, **kwargs)
-        plt.xlabel("X-Axis")
-        plt.ylabel("Y-Axis")
-        return f
-
-    return inner
+        plt.close('all')
 
 
 def timer(func):
