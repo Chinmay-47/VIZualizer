@@ -1,8 +1,10 @@
-import os
+import base64
 import io
-from flask import Flask, jsonify, Response
+import os
+
+import matplotlib.pyplot as plt
+from flask import Flask, jsonify, Response, request
 from flask_cors import CORS, cross_origin
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
 from .Supervised_Learning.Linear_Regression.Linear_Regression import LinearRegressionVisualizer
 
@@ -24,22 +26,126 @@ def get_topics_list() -> Response:
     return jsonify(list(zip(topics, sub_topics)))
 
 
-@viz.route('/home/linear-regression', methods=['GET'])
+@viz.route('/get-linear-regression-plots', methods=['POST'])
 @cross_origin(supports_credentials=True)
-def get_linear_Regression_plots() -> Response:
+def get_linear_regression_plots() -> Response:
 
-    vizualizer = LinearRegressionVisualizer()
-    fig1 = vizualizer.show_data(return_fig=True)
-    # fig2 = vizualizer.show_initial_regression_line(return_fig=True)
-    # vizualizer.train()
-    # fig3 = vizualizer.show_regression_line_comparison(return_fig=True)
+    output = {}
+    input_data = request.get_json(force=True)
+
+    vizualizer = LinearRegressionVisualizer(randomize=input_data['randomize'],
+                                            learning_rate=input_data['learningRate'],
+                                            no_data_points=input_data['dataPoints'],
+                                            is_linearly_increasing=input_data['linearlyIncreasing'],
+                                            no_epochs=input_data['epochs'])
+    plt.switch_backend('agg')
+
+    _ = vizualizer.show_data(return_fig=True)
     output1 = io.BytesIO()
-    # output2 = io.BytesIO()
-    # output3 = io.BytesIO()
-    FigureCanvas(fig1).print_png(output1)
-    # FigureCanvas(fig2).print_png(output2)
-    # FigureCanvas(fig3).print_png(output3)
-    return Response(output1.getvalue(), mimetype='image/png')
+    plt.savefig(output1, format='jpg')
+    output1.seek(0)
+    my_base64_jpgData = base64.b64encode(output1.read())
+    output['data points'] = str(my_base64_jpgData)
+
+    _ = vizualizer.show_initial_regression_line(return_fig=True)
+    output1 = io.BytesIO()
+    plt.savefig(output1, format='jpg')
+    output1.seek(0)
+    my_base64_jpgData = base64.b64encode(output1.read())
+    output['initial regression line'] = str(my_base64_jpgData)
+
+    vizualizer.train()
+
+    _ = vizualizer.show_regression_line_comparison(return_fig=True)
+    output1 = io.BytesIO()
+    plt.savefig(output1, format='jpg')
+    output1.seek(0)
+    my_base64_jpgData = base64.b64encode(output1.read())
+    output['regression line comparison'] = str(my_base64_jpgData)
+
+    _ = vizualizer.show_regression_line_progression(return_fig=True)
+    output1 = io.BytesIO()
+    plt.savefig(output1, format='jpg')
+    output1.seek(0)
+    my_base64_jpgData = base64.b64encode(output1.read())
+    output['regression line progression'] = str(my_base64_jpgData)
+
+    _ = vizualizer.show_cost_history(return_fig=True)
+    output1 = io.BytesIO()
+    plt.savefig(output1, format='jpg')
+    output1.seek(0)
+    my_base64_jpgData = base64.b64encode(output1.read())
+    output['cost history'] = str(my_base64_jpgData)
+
+    return jsonify(output)
+
+
+@viz.route('/get-linear-regression-data', methods=['POST'])
+@cross_origin(supports_credentials=True)
+def get_linear_regression_data() -> Response:
+
+    input_data = request.get_json(force=True)
+
+    vizualizer = LinearRegressionVisualizer(randomize=input_data['randomize'],
+                                            learning_rate=input_data['learningRate'],
+                                            no_data_points=input_data['dataPoints'],
+                                            is_linearly_increasing=input_data['linearlyIncreasing'],
+                                            no_epochs=input_data['epochs'])
+    plt.switch_backend('agg')
+    _ = vizualizer.show_data(return_fig=True)
+    output1 = io.BytesIO()
+    plt.savefig(output1, format='jpg')
+    output1.seek(0)
+    my_base64_jpgData = base64.b64encode(output1.read())
+
+    return jsonify({'base64String': str(my_base64_jpgData)})
+
+
+@viz.route('/get-linear-regression-initial-line', methods=['POST'])
+@cross_origin(supports_credentials=True)
+def get_linear_regression_initial_line() -> Response:
+
+    input_data = request.get_json(force=True)
+
+    vizualizer = LinearRegressionVisualizer(randomize=input_data['randomize'],
+                                            learning_rate=input_data['learningRate'],
+                                            no_data_points=input_data['dataPoints'],
+                                            is_linearly_increasing=input_data['linearlyIncreasing'],
+                                            no_epochs=input_data['epochs'])
+    plt.switch_backend('agg')
+
+    _ = vizualizer.show_initial_regression_line(return_fig=True)
+    output1 = io.BytesIO()
+    plt.savefig(output1, format='jpg')
+    output1.seek(0)
+    my_base64_jpgData = base64.b64encode(output1.read())
+
+    return jsonify({'base64String': str(my_base64_jpgData)})
+
+
+@viz.route('/get-linear-regression-comparison', methods=['POST'])
+@cross_origin(supports_credentials=True)
+def get_linear_regression_final_line() -> Response:
+
+    input_data = request.get_json(force=True)
+
+    vizualizer = LinearRegressionVisualizer(randomize=input_data['randomize'],
+                                            learning_rate=input_data['learningRate'],
+                                            no_data_points=input_data['dataPoints'],
+                                            is_linearly_increasing=input_data['linearlyIncreasing'],
+                                            no_epochs=input_data['epochs'])
+    plt.switch_backend('agg')
+
+    vizualizer.train()
+
+    plt.switch_backend('agg')
+    _ = vizualizer.show_regression_line_comparison(return_fig=True)
+    output1 = io.BytesIO()
+    plt.savefig(output1, format='jpg')
+    output1.seek(0)
+    my_base64_jpgData = base64.b64encode(output1.read())
+
+    return jsonify({'base64String': str(my_base64_jpgData)})
 
 
 if __name__ == '__main__':
