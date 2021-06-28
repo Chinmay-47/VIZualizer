@@ -1,9 +1,11 @@
-import numpy as np
-from backend.utils import DataPointsGenerator, timer, clear_prev_plots, set_default_labels, clear_plots
 from typing import Optional, Union
+
 import matplotlib.pyplot as plt
-from tqdm import tqdm
+import numpy as np
 from matplotlib.animation import FuncAnimation
+from tqdm import tqdm
+
+from backend.utils import DataPointsGenerator, timer, clear_prev_plots, set_default_labels, clear_plots
 
 
 class LinearRegressionVisualizer:
