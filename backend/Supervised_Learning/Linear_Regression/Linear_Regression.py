@@ -234,6 +234,8 @@ class LinearRegressionVisualizer:
         fig, ax = plt.subplots()
         ax.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
 
+        plt.title("Data Points")
+
         if return_fig:
             return fig
 
@@ -252,6 +254,7 @@ class LinearRegressionVisualizer:
         ax.plot(list(zip(*self._initial_regression_line))[0],
                 list(zip(*self._initial_regression_line))[1], c='blue')
 
+        plt.title("Initial Regression Line")
         if return_fig:
             return fig
 
