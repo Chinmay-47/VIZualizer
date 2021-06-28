@@ -7,51 +7,45 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-class PlotUtils:
+def clear_prev_plots(func):
     """
-    Helper class with methods and decorators for plotting related utilities.
+    Helper decorator to remove any previous matplotlib plots before function execution.
     """
 
-    @staticmethod
-    def clear_prev_plots(func):
-        """
-        Helper decorator to remove any previous matplotlib plots before function execution.
-        """
-
-        @wraps(func)
-        def inner(*args, **kwargs):
-            plt.cla()
-            plt.clf()
-            plt.close()
-            f = func(*args, **kwargs)
-            return f
-
-        return inner
-
-    @staticmethod
-    def set_default_labels(func):
-        """
-        Helper decorator to set default labels to X and Y axes for matplotlib plots.
-        """
-
-        @wraps(func)
-        def inner(*args, **kwargs):
-            f = func(*args, **kwargs)
-            plt.xlabel("X-Axis")
-            plt.ylabel("Y-Axis")
-            return f
-
-        return inner
-
-    @staticmethod
-    def clear_plots() -> None:
-        """
-        Helper function to clear all matplotlib plots and figures.
-        """
-
+    @wraps(func)
+    def inner(*args, **kwargs):
         plt.cla()
         plt.clf()
-        plt.close('all')
+        plt.close()
+        f = func(*args, **kwargs)
+        return f
+
+    return inner
+
+
+def set_default_labels(func):
+    """
+    Helper decorator to set default labels to X and Y axes for matplotlib plots.
+    """
+
+    @wraps(func)
+    def inner(*args, **kwargs):
+        f = func(*args, **kwargs)
+        plt.xlabel("X-Axis")
+        plt.ylabel("Y-Axis")
+        return f
+
+    return inner
+
+
+def clear_plots() -> None:
+    """
+    Helper function to clear all matplotlib plots and figures.
+    """
+
+    plt.cla()
+    plt.clf()
+    plt.close('all')
 
 
 def timer(func):
@@ -296,3 +290,7 @@ class DataPointsGenerator:
         y_vals = (slope * x_values) + intercept
 
         return np.array(list(zip(x_vals, y_vals)))
+
+
+if __name__ == '__main__':
+    pass
