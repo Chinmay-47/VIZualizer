@@ -408,7 +408,7 @@ def main():
     viz.visualize()
 
 
-def profiler():
+def _profiler():
     import cProfile
     import pstats
 
@@ -423,5 +423,5 @@ def profiler():
 
 
 if __name__ == '__main__':
-    # profiler()
+    # _profiler()
     main()
