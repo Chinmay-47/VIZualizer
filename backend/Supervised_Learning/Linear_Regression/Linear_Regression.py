@@ -1,5 +1,5 @@
 import numpy as np
-from ...utils import DataPointsGenerator, PlotUtils, timer
+from backend.utils import DataPointsGenerator, timer, clear_prev_plots, set_default_labels, clear_plots
 from typing import Optional, Union
 import matplotlib.pyplot as plt
 from tqdm import tqdm
@@ -54,6 +54,7 @@ class LinearRegressionVisualizer:
         self._learning_rate: float = learning_rate
         self._cost: float = float()
         self._cost_history: list = list()
+        self._weights_history: list = [(self._theta1, self._theta0)]
         self._initial_regression_line: np.ndarray = self._dpgen.gen_line_given_x(x_values=self._x_values,
                                                                                  slope=self._theta1,
                                                                                  intercept=self._theta0)
@@ -139,6 +140,13 @@ class LinearRegressionVisualizer:
         """
         return np.array(self._cost_history)
 
+    @property
+    def weights_history(self) -> np.ndarray:
+        """
+        Cost computed before each weight update.
+        """
+        return np.array(self._weights_history)
+
     def reset(self, randomize: Optional[bool] = None, learning_rate: Optional[float] = None,
               no_data_points: Optional[int] = None, is_linearly_increasing: Optional[bool] = None,
               no_epochs: Optional[int] = None):
@@ -160,10 +168,38 @@ class LinearRegressionVisualizer:
         self._cost = (1/(2 * len(self._y_values))) * sum([i * i for i in (self.predicted_y_values - self._y_values)])
 
     def _update_weights(self):
-        new_theta1 = self._theta1 - ((self._learning_rate / len(self._y_values)) *
-                                     sum((self.predicted_y_values - self._y_values) * self._x_values))
-        new_theta0 = self._theta0 - ((self._learning_rate / len(self._y_values)) *
-                                     sum(self.predicted_y_values - self._y_values))
+
+        _err1, _err0 = [], []
+        _errs1 = ((self.predicted_y_values - self._y_values) * self._x_values)
+        _errs0 = (self.predicted_y_values - self._y_values)
+
+        # We cap the max and min values to avoid overflow during any float operations.
+        for i, j in zip(_errs1, _errs0):
+            if -1.7976931348623157e+150 < i < 1.7976931348623157e+150:
+                _err1.append(i)
+            elif i < -1.7976931348623157e+150:
+                _err1.append(-1.7976931348623157e+150)
+            elif i > 1.7976931348623157e+150:
+                _err1.append(1.7976931348623157e+150)
+            if -1.7976931348623157e+150 < j < 1.7976931348623157e+150:
+                _err0.append(j)
+            elif j < -1.7976931348623157e+150:
+                _err0.append(-1.7976931348623157e+150)
+            elif j > 1.7976931348623157e+100:
+                _err0.append(1.7976931348623157e+150)
+
+        _upd1 = ((self._learning_rate / len(self._y_values)) * sum(_err1))
+        _upd0 = ((self._learning_rate / len(self._y_values)) * sum(_err0))
+
+        # We do not update the weights to prevent gradients from exploding out of bounds and cause overflow.
+        if _upd1 < -1.7976931348623157e+300 or _upd1 > 1.7976931348623157e+300:
+            _upd1 = 0.0
+
+        if _upd0 < -1.7976931348623157e+300 or _upd0 > 1.7976931348623157e+300:
+            _upd0 = 0.0
+
+        new_theta1 = self._theta1 - _upd1
+        new_theta0 = self._theta0 - _upd0
 
         self._theta1 = new_theta1
         self._theta0 = new_theta0
@@ -173,7 +209,7 @@ class LinearRegressionVisualizer:
         """
         Trains the model and updates weights to minimize cost/error.
 
-        Note: Runs for 1000 epochs by default. Can be changed here or during initialization.
+        Note: Runs for 10000 epochs by default. Can be changed here or during initialization.
         """
 
         if epochs is None:
@@ -185,31 +221,32 @@ class LinearRegressionVisualizer:
         for _ in tqdm(range(epochs)):
             self._cost_history.append(self.cost)
             self._update_weights()
+            self._weights_history.append((self._theta1, self._theta0))
 
-    @PlotUtils.set_default_labels
-    @PlotUtils.clear_prev_plots
+    @set_default_labels
+    @clear_prev_plots
     def show_data(self, return_fig: Optional[bool] = False) -> Optional[plt.figure]:
         """
         Shows a plot of the data points used to perform linear regression.
         """
 
-        fig, ax = plt.subplots()
         plt.style.use("ggplot")
+        fig, ax = plt.subplots()
         ax.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
 
         if return_fig:
             return fig
 
-    @PlotUtils.set_default_labels
-    @PlotUtils.clear_prev_plots
+    @set_default_labels
+    @clear_prev_plots
     def show_initial_regression_line(self, include_data: Optional[bool] = True,
                                      return_fig: Optional[bool] = False) -> Optional[plt.figure]:
         """
         Shows a plot of the initial regression line with or without data.
         """
 
-        fig, ax = plt.subplots()
         plt.style.use("ggplot")
+        fig, ax = plt.subplots()
         if include_data:
             ax.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
         ax.plot(list(zip(*self._initial_regression_line))[0],
@@ -218,16 +255,16 @@ class LinearRegressionVisualizer:
         if return_fig:
             return fig
 
-    @PlotUtils.set_default_labels
-    @PlotUtils.clear_prev_plots
+    @set_default_labels
+    @clear_prev_plots
     def show_current_regression_line(self, include_data: Optional[bool] = True,
                                      return_fig: Optional[bool] = False) -> Optional[plt.figure]:
         """
         Shows a plot of the current regression line with or without data.
         """
 
-        fig, ax = plt.subplots()
         plt.style.use("ggplot")
+        fig, ax = plt.subplots()
         if include_data:
             plt.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
         plt.plot(list(zip(*self.current_regression_line))[0],
@@ -236,16 +273,16 @@ class LinearRegressionVisualizer:
         if return_fig:
             return fig
 
-    @PlotUtils.set_default_labels
-    @PlotUtils.clear_prev_plots
+    @set_default_labels
+    @clear_prev_plots
     def show_regression_line_comparison(self, include_data: Optional[bool] = True,
                                         return_fig: Optional[bool] = False) -> Optional[plt.figure]:
         """
         Shows a plot of the current regression line with or without data.
         """
 
-        fig, ax = plt.subplots()
         plt.style.use("ggplot")
+        fig, ax = plt.subplots()
         if include_data:
             plt.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
         plt.plot(list(zip(*self._initial_regression_line))[0],
@@ -258,23 +295,56 @@ class LinearRegressionVisualizer:
         if return_fig:
             return fig
 
-    @PlotUtils.clear_prev_plots
+    @clear_prev_plots
+    def show_regression_line_progression(self, include_data: Optional[bool] = True,
+                                         return_fig: Optional[bool] = False) -> Optional[plt.figure]:
+        """
+        Shows a collage of the regression line progression through training.
+        """
+        plt.style.use("ggplot")
+        fig, ((ax1, ax2, ax3), (ax4, ax5, ax6)) = plt.subplots(nrows=2, ncols=3, sharex='all', sharey='all')
+        _all_ax = [ax1, ax2, ax3, ax4, ax5, ax6]
+        if include_data:
+            ax1.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
+            ax2.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
+            ax3.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
+            ax4.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
+            ax5.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
+            ax6.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
+
+        ax1.plot(list(zip(*self._initial_regression_line))[0], list(zip(*self._initial_regression_line))[1], c='green')
+        ax1.set_title("No Training",  fontsize=10)
+
+        _weights = []
+        for i in range(1, 6):
+            _slope = self.weights_history[((self.weights_history.shape[0] - 1)//5) * i][0]
+            _intercept = self.weights_history[((self.weights_history.shape[0] - 1)//5) * i][1]
+            _curr_line = self._dpgen.gen_line(slope=_slope, intercept=_intercept, no_points=self._no_data_points)
+            _all_ax[i].plot(list(zip(*_curr_line))[0], list(zip(*_curr_line))[1], c='green')
+            _all_ax[i].set_title("{}% Trained".format(i * 20), fontsize=10)
+
+        fig.suptitle("Regression Line Progression", fontsize='x-large')
+
+        if return_fig:
+            return fig
+
+    @clear_prev_plots
     def show_cost_history(self, return_fig: Optional[bool] = False) -> Optional[plt.figure]:
         """
         Shows a plot of the cost through the history of training.
         """
 
-        fig, ax = plt.subplots()
         plt.style.use("ggplot")
+        fig, ax = plt.subplots()
         ax.plot(list(range(len(self._cost_history))), self._cost_history, c='blue')
-        ax.title("Cost History")
-        ax.xlabel("Epochs")
-        ax.ylabel("Cost")
+        plt.title("Cost History")
+        plt.xlabel("Epochs")
+        plt.ylabel("Cost")
 
         if return_fig:
             return fig
 
-    @PlotUtils.clear_prev_plots
+    @clear_prev_plots
     def visualize(self, show_data: Optional[bool] = True, show_initial: Optional[bool] = True,
                   save: Optional[bool] = False, save_file: Optional[str] = None) -> Union[FuncAnimation, None]:
         """
@@ -291,50 +361,67 @@ class LinearRegressionVisualizer:
         fig, ax = plt.subplots()
         if show_data:
             ax.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
-        if show_initial:
-            ax.plot(list(zip(*self.initial_regression_line))[0], list(zip(*self.initial_regression_line))[1],
-                    c='blue', label="Intial")
         line, = ax.plot(list(zip(*self.current_regression_line))[0],
                         list(zip(*self.current_regression_line))[1],
                         scaley=False, scalex=False, c='green', label="Trained")
+        if show_initial:
+            ax.plot(list(zip(*self.initial_regression_line))[0], list(zip(*self.initial_regression_line))[1],
+                    c='blue', label="Intial")
         ax.legend()
 
         def _animate(i):
-            if i >= ((self._no_epochs//100) * 0.85):
-                [self._update_weights() for _ in range(1000)]
-            elif i >= ((self._no_epochs//100) * 0.85):
-                [self._update_weights() for _ in range(500)]
-            elif i >= ((self._no_epochs//100) * 0.75):
-                [self._update_weights() for _ in range(300)]
-            elif i >= ((self._no_epochs//100) * 0.6):
-                [self._update_weights() for _ in range(200)]
-            elif i >= ((self._no_epochs//100) * 0.5):
-                [self._update_weights() for _ in range(150)]
-            elif i >= ((self._no_epochs//100) * 0.4):
-                [self._update_weights() for _ in range(100)]
-            elif i >= ((self._no_epochs//100) * 0.2):
-                [self._update_weights() for _ in range(20)]
-            if i >= ((self._no_epochs//100) * 0.1):
-                [self._update_weights() for _ in range(5)]
-            else:
+            if i < 10:
                 self._update_weights()
+            elif i < 30:
+                [self._update_weights() for _ in range(int(0.0025 * self._no_epochs))]
+            elif i < 40:
+                [self._update_weights() for _ in range(int(0.005 * self._no_epochs))]
+            elif i < 60:
+                [self._update_weights() for _ in range(int(0.01 * self._no_epochs))]
+            else:
+                [self._update_weights() for _ in range(int(0.02 * self._no_epochs))]
+
             line.set_ydata(list(zip(*self.current_regression_line))[1])
             return line,
 
-        @PlotUtils.set_default_labels
+        @set_default_labels
         def _init_func():
             self.reset()
             line.set_ydata(list(zip(*self.current_regression_line))[1])
             return line,
 
         animation = FuncAnimation(fig, _animate, interval=1, blit=True, save_count=50, init_func=_init_func,
-                                  repeat=True, frames=(self._no_epochs//100), repeat_delay=1000)
+                                  repeat=True, frames=90, repeat_delay=500)
         plt.show()
 
         if save:
             if save_file is None:
-                animation.save("Linear_Regression_Visualization.gif", writer="Pillow", fps=30, bitrate=36000)
-            PlotUtils.clear_plots()
+                animation.save("Linear_Regression_Visualization.gif", writer="Pillow", fps=30, bitrate=-1)
+            clear_plots()
             return
 
         return animation
+
+
+def main():
+    viz = LinearRegressionVisualizer()
+    viz.visualize()
+
+
+def profiler():
+    import cProfile
+    import pstats
+
+    with cProfile.Profile() as pr:
+        viz = LinearRegressionVisualizer()
+        viz.train()
+        viz.show_cost_history()
+
+    stats = pstats.Stats(pr)
+    stats.sort_stats(pstats.SortKey.TIME)
+    stats.print_stats()
+
+
+if __name__ == '__main__':
+    # profiler()
+    main()
