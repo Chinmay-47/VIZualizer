@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from flask import Flask, jsonify, Response, request
 from flask_cors import CORS, cross_origin
 
-from .Supervised_Learning.Linear_Regression.Linear_Regression import LinearRegressionVisualizer
+from Supervised_Learning.Linear_Regression.Linear_Regression import LinearRegressionVisualizer
 
 viz = Flask(__name__)
 CORS(viz, support_credentials=True)

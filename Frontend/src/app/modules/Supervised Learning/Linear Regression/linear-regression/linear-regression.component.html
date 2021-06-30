@@ -1,0 +1,71 @@
+<div class="container-fluid linear-regression-container">
+    <div style="display: inline-flex; justify-content: center; width: 100%;" class="page-header">
+        <div class="row no-gutters">
+            <h3 style="margin-bottom: 5px; font-weight: bold; font-size: x-large;" class="page-title">Linear Regression
+            </h3>
+        </div>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <div class="page-container filters">
+        <div class="row">
+            <div class="col-12">
+                <form ngValidate #linearRegressionForm="ngForm" (ngSubmit)="linearRegression()">
+                    <mat-form-field style="margin-left: 10px; margin-top: 5px;" apprearence="outline" class="mr-2">
+                        <mat-label>Data points</mat-label>
+                        <input type="number" #tooltip="matTooltip"
+                            matTooltip="Enter the number of data points between 1-100" min="1" step="1" max="100"
+                            matInput required name="linearRegressionObj.dataPoints"
+                            [(ngModel)]="linearRegressionObj.dataPoints">
+                    </mat-form-field>
+
+                    <mat-form-field style="margin-left: 10px;" apprearence="outline" class="mr-2">
+                        <mat-label>Learning Rate</mat-label>
+                        <input type="number" #tooltip="matTooltip" matTooltip="Enter the learning rate between 0.0001-1"
+                            min="0.0001" step="0.0001" max="1" matInput required name="linearRegressionObj.learningRate"
+                            [(ngModel)]="linearRegressionObj.learningRate">
+                    </mat-form-field>
+
+                    <mat-form-field style="margin-left: 10px;" apprearence="outline" class="mr-2">
+                        <mat-label>No. of epochs</mat-label>
+                        <input type="number" #tooltip="matTooltip"
+                            matTooltip="Enter the number of epochs between 1-1000000" min="1" step="1" max="1000000"
+                            matInput required name="linearRegressionObj.epochs"
+                            [(ngModel)]="linearRegressionObj.epochs">
+                    </mat-form-field>
+
+                    <mat-label style="margin-left: 20px;" class="mr-2">Randomize : </mat-label>
+                    <mat-slide-toggle #tooltip="matTooltip" matTooltip="Randomize the data"
+                        name="linearRegressionObj.randomize" [(ngModel)]="linearRegressionObj.randomize" color="warn">
+                    </mat-slide-toggle>
+
+                    <mat-label style="margin-left: 20px;" class="mr-2">Linearly Increasing : </mat-label>
+                    <mat-slide-toggle #tooltip="matTooltip" matTooltip="Generate linearly increasing data"
+                        name="linearRegressionObj.linearlyIncreasing"
+                        [(ngModel)]="linearRegressionObj.linearlyIncreasing" color="warn">
+                    </mat-slide-toggle>
+
+                    <button #tooltip="matTooltip"
+                        matTooltip="Generate the plots for data points, initial regression line and comparison of initial and final regression lines"
+                        style="margin-left: 20px;" [disabled]="!linearRegressionForm.valid"
+                        ng-disabled="linearRegressionForm.$invalid" type="submit" mat-raised-button color="primary"
+                        class="ml-2">
+                        Visualize
+                        <mat-icon style="margin-left: 5px;">visibility</mat-icon>
+                    </button>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <mat-divider style="border-top-color: black;"></mat-divider>
+
+    <img class="plots" *ngIf="displayPlots" [src]="imagePathDataPoints" alt="Data plot">
+    <img class="plots" *ngIf="displayPlots" [src]="imagePathInitialRegressionLine" alt="Initial regression line">
+    <img class="plots" *ngIf="displayPlots" [src]="imagePathRegressionComparison" alt="Regression comparison">
+    <img class="plots" *ngIf="displayPlots" [src]="imagePathCostHistory" alt="Cost history">
+    <img class="plots" *ngIf="displayPlots" [src]="imagePathRegressionProgression" alt="Regression progression">
+    <div *ngIf="displayAnimationplot"  [innerHTML]="animationPath | noSanitize"></div>
+</div>
