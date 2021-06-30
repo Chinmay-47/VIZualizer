@@ -5,8 +5,9 @@ import numpy as np
 from matplotlib.animation import FuncAnimation
 from tqdm import tqdm
 
-from backend.utils import (DataPointsGenerator, timer, clear_prev_plots, set_default_labels, clear_plots,
-                           return_or_save_figure)
+# noinspection PyUnresolvedReferences
+from src.utils import (DataPointsGenerator, timer, clear_prev_plots, set_default_labels, clear_plots,
+                       return_or_save_figure)
 
 
 class SimpleLinearRegressionVisualizer:

@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 from flask import Flask, jsonify, Response, request
 from flask_cors import CORS, cross_origin
 
-from backend import SimpleLinearRegressionVisualizer
+# noinspection PyUnresolvedReferences
+from src import SimpleLinearRegressionVisualizer
 
 viz = Flask(__name__)
 CORS(viz, support_credentials=True)
@@ -19,9 +20,10 @@ def get_topics_list() -> Response:
     :return: A list of topics and their corresponding subtopics.
     """
 
-    topics = [topic.name for topic in os.scandir(os.getcwd()) if topic.is_dir() and topic.name != '__pycache__']
-    sub_topics = [[sub_topic.name for sub_topic in os.scandir(os.getcwd() + '/' + topic) if sub_topic.is_dir()
-                   and sub_topic.name != '__pycache__'] for topic in topics]
+    topics = [topic.name for topic in os.scandir(os.getcwd() + '/backend/src')
+              if topic.is_dir() and topic.name != '__pycache__']
+    sub_topics = [[sub_topic.name for sub_topic in os.scandir(os.getcwd() + '/backend/src/' + topic)
+                   if sub_topic.is_dir() and sub_topic.name != '__pycache__'] for topic in topics]
 
     return jsonify(list(zip(topics, sub_topics)))
 
