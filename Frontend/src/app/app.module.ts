@@ -15,7 +15,7 @@ import { LinearRegressionComponent } from './modules/Supervised Learning/Linear 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { NoSanitizePipe } from './modules/Supervised Learning/Linear Regression/linear-regression.utils';
+import { NoSanitizePipe } from './modules/Supervised Learning/Linear Regression/linear-regression/linear-regression.utils';
 
 @NgModule({
   declarations: [

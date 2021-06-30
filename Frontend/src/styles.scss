@@ -24,3 +24,5 @@ a {
   text-decoration-color: mat-color($app-primary);
   color: mat-color($app-primary);
 }
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
