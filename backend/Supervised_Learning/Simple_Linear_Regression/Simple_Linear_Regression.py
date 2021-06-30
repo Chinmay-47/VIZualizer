@@ -1,14 +1,15 @@
-from typing import Optional, Union
+from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
 from tqdm import tqdm
 
-from utils import DataPointsGenerator, timer, clear_prev_plots, set_default_labels, clear_plots
+from backend import (DataPointsGenerator, timer, clear_prev_plots, set_default_labels, clear_plots,
+                     return_or_save_figure)
 
 
-class LinearRegressionVisualizer:
+class SimpleLinearRegressionVisualizer:
     """
     Performs and Visualizes Linear Regression.
     """
@@ -131,7 +132,6 @@ class LinearRegressionVisualizer:
         """
         Cost/Error of the current predicted Y-values.
         """
-
         self._compute_cost()
         return self._cost
 
@@ -145,7 +145,7 @@ class LinearRegressionVisualizer:
     @property
     def weights_history(self) -> np.ndarray:
         """
-        Cost computed before each weight update.
+        Weight before each weight update.
         """
         return np.array(self._weights_history)
 
@@ -175,7 +175,7 @@ class LinearRegressionVisualizer:
         _errs1 = ((self.predicted_y_values - self._y_values) * self._x_values)
         _errs0 = (self.predicted_y_values - self._y_values)
 
-        # We cap the max and min values to avoid overflow during any float operations.
+        # We cap the max and min values to avoid overflow during any operations.
         for i, j in zip(_errs1, _errs0):
             if -1.7976931348623157e+150 < i < 1.7976931348623157e+150:
                 _err1.append(i)
@@ -190,18 +190,18 @@ class LinearRegressionVisualizer:
             elif j > 1.7976931348623157e+100:
                 _err0.append(1.7976931348623157e+150)
 
-        _upd1 = ((self._learning_rate / len(self._y_values)) * sum(_err1))
-        _upd0 = ((self._learning_rate / len(self._y_values)) * sum(_err0))
+        upd1_ = ((self._learning_rate / len(self._y_values)) * sum(_err1))
+        upd0_ = ((self._learning_rate / len(self._y_values)) * sum(_err0))
 
         # We do not update the weights to prevent gradients from exploding out of bounds and cause overflow.
-        if _upd1 < -1.7976931348623157e+300 or _upd1 > 1.7976931348623157e+300:
-            _upd1 = 0.0
+        if upd1_ < -1.7976931348623157e+300 or upd1_ > 1.7976931348623157e+300:
+            upd1_ = 0.0
 
-        if _upd0 < -1.7976931348623157e+300 or _upd0 > 1.7976931348623157e+300:
-            _upd0 = 0.0
+        if upd0_ < -1.7976931348623157e+300 or upd0_ > 1.7976931348623157e+300:
+            upd0_ = 0.0
 
-        new_theta1 = self._theta1 - _upd1
-        new_theta0 = self._theta0 - _upd0
+        new_theta1 = self._theta1 - upd1_
+        new_theta0 = self._theta0 - upd0_
 
         self._theta1 = new_theta1
         self._theta0 = new_theta0
@@ -225,26 +225,29 @@ class LinearRegressionVisualizer:
             self._update_weights()
             self._weights_history.append((self._theta1, self._theta0))
 
+        # Final cost
+        self._cost_history.append(self.cost)
+
+    @return_or_save_figure
     @set_default_labels
     @clear_prev_plots
-    def show_data(self, return_fig: Optional[bool] = False) -> Optional[plt.figure]:
+    def show_data(self, **kwargs) -> Optional[plt.figure]:
         """
         Shows a plot of the data points used to perform linear regression.
         """
 
         plt.style.use("ggplot")
         fig, ax = plt.subplots()
-        ax.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
+        ax.scatter(self._x_values, self._y_values, marker='*', c='red')
+        plt.title("Data Points for Regression")
 
-        plt.title("Data Points")
-
-        if return_fig:
+        if kwargs['return_fig']:
             return fig
 
+    @return_or_save_figure
     @set_default_labels
     @clear_prev_plots
-    def show_initial_regression_line(self, include_data: Optional[bool] = True,
-                                     return_fig: Optional[bool] = False) -> Optional[plt.figure]:
+    def show_initial_regression_line(self, include_data: Optional[bool] = True, **kwargs) -> Optional[plt.figure]:
         """
         Shows a plot of the initial regression line with or without data.
         """
@@ -252,18 +255,18 @@ class LinearRegressionVisualizer:
         plt.style.use("ggplot")
         fig, ax = plt.subplots()
         if include_data:
-            ax.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
+            ax.scatter(self._x_values, self._y_values, marker='*', c='red')
         ax.plot(list(zip(*self._initial_regression_line))[0],
                 list(zip(*self._initial_regression_line))[1], c='blue')
-
         plt.title("Initial Regression Line")
-        if return_fig:
+
+        if kwargs['return_fig']:
             return fig
 
+    @return_or_save_figure
     @set_default_labels
     @clear_prev_plots
-    def show_current_regression_line(self, include_data: Optional[bool] = True,
-                                     return_fig: Optional[bool] = False) -> Optional[plt.figure]:
+    def show_current_regression_line(self, include_data: Optional[bool] = True, **kwargs) -> Optional[plt.figure]:
         """
         Shows a plot of the current regression line with or without data.
         """
@@ -271,17 +274,18 @@ class LinearRegressionVisualizer:
         plt.style.use("ggplot")
         fig, ax = plt.subplots()
         if include_data:
-            plt.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
-        plt.plot(list(zip(*self.current_regression_line))[0],
-                 list(zip(*self.current_regression_line))[1], c='blue')
+            ax.scatter(self._x_values, self._y_values, marker='*', c='red')
+        ax.plot(list(zip(*self.current_regression_line))[0],
+                list(zip(*self.current_regression_line))[1], c='blue')
+        plt.title("Current Regression Line")
 
-        if return_fig:
+        if kwargs['return_fig']:
             return fig
 
+    @return_or_save_figure
     @set_default_labels
     @clear_prev_plots
-    def show_regression_line_comparison(self, include_data: Optional[bool] = True,
-                                        return_fig: Optional[bool] = False) -> Optional[plt.figure]:
+    def show_regression_line_comparison(self, include_data: Optional[bool] = True, **kwargs) -> Optional[plt.figure]:
         """
         Shows a plot of the current regression line with or without data.
         """
@@ -289,36 +293,32 @@ class LinearRegressionVisualizer:
         plt.style.use("ggplot")
         fig, ax = plt.subplots()
         if include_data:
-            plt.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
-        plt.plot(list(zip(*self._initial_regression_line))[0],
-                 list(zip(*self._initial_regression_line))[1], c='blue', label="Intial")
-        plt.plot(list(zip(*self.current_regression_line))[0],
-                 list(zip(*self.current_regression_line))[1], c='green', label="Trained")
+            ax.scatter(self._x_values, self._y_values, marker='*', c='red')
+        ax.plot(list(zip(*self._initial_regression_line))[0],
+                list(zip(*self._initial_regression_line))[1], c='blue', label="Intial")
+        ax.plot(list(zip(*self.current_regression_line))[0],
+                list(zip(*self.current_regression_line))[1], c='green', label="Trained")
         plt.title("Initial Regression Line vs Trained Regression Line")
-        plt.legend()
+        ax.legend()
 
-        if return_fig:
+        if kwargs['return_fig']:
             return fig
 
+    @return_or_save_figure
     @clear_prev_plots
-    def show_regression_line_progression(self, include_data: Optional[bool] = True,
-                                         return_fig: Optional[bool] = False) -> Optional[plt.figure]:
+    def show_regression_line_progression(self, include_data: Optional[bool] = True, **kwargs) -> Optional[plt.figure]:
         """
         Shows a collage of the regression line progression through training.
         """
         plt.style.use("ggplot")
         fig, ((ax1, ax2, ax3), (ax4, ax5, ax6)) = plt.subplots(nrows=2, ncols=3, sharex='all', sharey='all')
         _all_ax = [ax1, ax2, ax3, ax4, ax5, ax6]
+
         if include_data:
-            ax1.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
-            ax2.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
-            ax3.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
-            ax4.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
-            ax5.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
-            ax6.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
+            [axis.scatter(self._x_values, self._y_values, marker='*', c='red') for axis in _all_ax]
 
         ax1.plot(list(zip(*self._initial_regression_line))[0], list(zip(*self._initial_regression_line))[1], c='green')
-        ax1.set_title("No Training",  fontsize=10)
+        ax1.set_title("No Training",  fontsize=8)
 
         _weights = []
         for i in range(1, 6):
@@ -326,15 +326,16 @@ class LinearRegressionVisualizer:
             _intercept = self.weights_history[((self.weights_history.shape[0] - 1)//5) * i][1]
             _curr_line = self._dpgen.gen_line(slope=_slope, intercept=_intercept, no_points=self._no_data_points)
             _all_ax[i].plot(list(zip(*_curr_line))[0], list(zip(*_curr_line))[1], c='green')
-            _all_ax[i].set_title("{}% Trained".format(i * 20), fontsize=10)
+            _all_ax[i].set_title("{}% Trained".format(i * 20), fontsize=8)
 
         fig.suptitle("Regression Line Progression", fontsize='x-large')
 
-        if return_fig:
+        if kwargs['return_fig']:
             return fig
 
+    @return_or_save_figure
     @clear_prev_plots
-    def show_cost_history(self, return_fig: Optional[bool] = False) -> Optional[plt.figure]:
+    def show_cost_history(self, **kwargs) -> Optional[plt.figure]:
         """
         Shows a plot of the cost through the history of training.
         """
@@ -346,26 +347,25 @@ class LinearRegressionVisualizer:
         plt.xlabel("Epochs")
         plt.ylabel("Cost")
 
-        if return_fig:
+        if kwargs['return_fig']:
             return fig
 
     @clear_prev_plots
     def visualize(self, show_data: Optional[bool] = True, show_initial: Optional[bool] = True,
-                  save: Optional[bool] = False, save_file: Optional[str] = None) -> Union[FuncAnimation, None]:
+                  save: Optional[bool] = False) -> Optional[FuncAnimation]:
         """
         Visualizes the process of Linear regression.
 
         :param show_data: Can choose to not display data points.
         :param show_initial: Can choose to not display initial regression line.
         :param save: Can save the animation as a video in the current working directory.
-        :param save_file: Name of the file to save.
         :return: Animation Object.
         """
 
         plt.style.use("ggplot")
         fig, ax = plt.subplots()
         if show_data:
-            ax.scatter(list(zip(*self._data_points))[0], list(zip(*self._data_points))[1], marker='*', c='red')
+            ax.scatter(self._x_values, self._y_values, marker='*', c='red')
         line, = ax.plot(list(zip(*self.current_regression_line))[0],
                         list(zip(*self.current_regression_line))[1],
                         scaley=False, scalex=False, c='green', label="Trained")
@@ -400,8 +400,7 @@ class LinearRegressionVisualizer:
         plt.show()
 
         if save:
-            if save_file is None:
-                animation.save("Linear_Regression_Visualization.gif", writer="Pillow", fps=30, bitrate=-1)
+            animation.save("Simple_Linear_Regression_Visualization.gif", writer="Pillow", fps=30, bitrate=-1)
             clear_plots()
             return
 
@@ -409,7 +408,7 @@ class LinearRegressionVisualizer:
 
 
 def main():
-    viz = LinearRegressionVisualizer()
+    viz = SimpleLinearRegressionVisualizer()
     viz.visualize()
 
 
@@ -418,7 +417,7 @@ def _profiler():
     import pstats
 
     with cProfile.Profile() as pr:
-        viz = LinearRegressionVisualizer()
+        viz = SimpleLinearRegressionVisualizer()
         viz.train()
         viz.show_cost_history()
 
