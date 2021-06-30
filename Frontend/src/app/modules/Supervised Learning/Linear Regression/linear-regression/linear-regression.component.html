@@ -11,6 +11,12 @@
     <div class="page-container filters">
         <div class="row">
             <div class="col-12">
+                <button
+                    matTooltip="Learn about linear regression"
+                    style="margin-right: 20px; float: right;" mat-raised-button color="primary"
+                    class="ml-2">
+                    Learn
+                </button>
                 <form ngValidate #linearRegressionForm="ngForm" (ngSubmit)="linearRegression()">
                     <mat-form-field style="margin-left: 10px; margin-top: 5px;" apprearence="outline" class="mr-2">
                         <mat-label>Data points</mat-label>
