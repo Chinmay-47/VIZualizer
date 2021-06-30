@@ -1,10 +1,58 @@
 import os
 import time
+import types
 from functools import wraps
 from typing import Optional, Union, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
+
+
+def add_docstring(input_func: object, doc_to_add: str) -> object:
+    """
+    Helper function to add docstrings to other functions.
+    """
+
+    if not isinstance(input_func, (types.FunctionType, types.MethodType)):
+        raise TypeError("Input needs to be a function.")
+
+    existing_docstring = ['\n', str(input_func.__doc__).strip(), '\n'] if input_func.__doc__ is not None else []
+    input_func.__doc__ = ' '.join(existing_docstring + [doc_to_add])
+    return input_func
+
+
+def return_or_save_figure(func):
+    """
+    Helper decorator to optionally save a matplotlib figure
+    and also optionally return the matplotlib figure for a given plot.
+    """
+
+    doc_to_add = """
+    Pass save=True as a keyword argument to save figure. 
+
+    Pass return_fig=True as a keyword argument to return the figure.
+    """
+
+    func = add_docstring(func, doc_to_add)
+
+    @wraps(func)
+    def decorator(*args, **kwargs):
+        if 'return_fig' in kwargs:
+            if not isinstance(kwargs['return_fig'], bool):
+                raise TypeError("The 'return_fig' keyword argument only takes boolean values (True/False).")
+        else:
+            kwargs['return_fig'] = False
+
+        f = func(*args, **kwargs)
+        if 'save' in kwargs.keys():
+            if not isinstance(kwargs['save'], bool):
+                raise TypeError("The 'save' keyword argument only takes boolean values (True/False).")
+            elif kwargs['save']:
+                plt.savefig(func.__name__)
+
+        return f
+
+    return decorator
 
 
 def clear_prev_plots(func):
@@ -13,14 +61,14 @@ def clear_prev_plots(func):
     """
 
     @wraps(func)
-    def inner(*args, **kwargs):
+    def decorator(*args, **kwargs):
         plt.cla()
         plt.clf()
         plt.close()
         f = func(*args, **kwargs)
         return f
 
-    return inner
+    return decorator
 
 
 def set_default_labels(func):
@@ -29,13 +77,13 @@ def set_default_labels(func):
     """
 
     @wraps(func)
-    def inner(*args, **kwargs):
+    def decorator(*args, **kwargs):
         f = func(*args, **kwargs)
         plt.xlabel("X-Axis")
         plt.ylabel("Y-Axis")
         return f
 
-    return inner
+    return decorator
 
 
 def clear_plots() -> None:
@@ -54,14 +102,14 @@ def timer(func):
     """
 
     @wraps(func)
-    def inner(*args, **kwargs):
+    def decorator(*args, **kwargs):
         start = time.perf_counter()
         f = func(*args, **kwargs)
         os.system('echo "' + "Function '{}' took {} seconds".format(func.__name__,
                                                                     round(time.perf_counter() - start, 5)) + '"')
         return f
 
-    return inner
+    return decorator
 
 
 class DataPointsGenerator:
