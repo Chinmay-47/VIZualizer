@@ -82,5 +82,17 @@ def get_linear_regression_plots() -> Response:
     return jsonify(output)
 
 
+@viz.route('/get-linear-regression-animation', methods=['GET'])
+@cross_origin(supports_credentials=True)
+def get_linear_regression_animation():
+
+    plt.switch_backend('agg')
+    vizualizer = SimpleLinearRegressionVisualizer()
+    anim = vizualizer.visualize()
+    jshtml = anim.to_jshtml()
+
+    return jshtml
+
+
 if __name__ == '__main__':
     viz.run(host='0.0.0.0', debug=True, port=3001)
