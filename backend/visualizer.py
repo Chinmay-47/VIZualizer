@@ -1,6 +1,5 @@
 import base64
 import io
-import os
 
 import matplotlib.pyplot as plt
 from flask import Flask, jsonify, Response, request
@@ -20,10 +19,8 @@ def get_topics_list() -> Response:
     :return: A list of topics and their corresponding subtopics.
     """
 
-    topics = [topic.name for topic in os.scandir(os.getcwd() + '/backend/src')
-              if topic.is_dir() and topic.name != '__pycache__']
-    sub_topics = [[sub_topic.name for sub_topic in os.scandir(os.getcwd() + '/backend/src/' + topic)
-                   if sub_topic.is_dir() and sub_topic.name != '__pycache__'] for topic in topics]
+    topics = ['Supervised_Learning', 'Unsupervised_Learning', 'Neural_Networks', 'Reinforcement_Learning']
+    sub_topics = [['Simple_Linear_Regression', ], [], [], []]
 
     return jsonify(list(zip(topics, sub_topics)))
 
