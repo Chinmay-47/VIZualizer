@@ -88,7 +88,7 @@ def get_linear_regression_animation():
     anim = vizualizer.visualize()
     jshtml = anim.to_jshtml()
 
-    return jshtml
+    return jsonify({"animation_html": jshtml})
 
 
 if __name__ == '__main__':
