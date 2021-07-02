@@ -1,6 +1,6 @@
 import base64
 import io
-import os
+from multiprocessing import Process, Queue
 
 import matplotlib.pyplot as plt
 from flask import Flask, jsonify, Response, request
@@ -20,10 +20,8 @@ def get_topics_list() -> Response:
     :return: A list of topics and their corresponding subtopics.
     """
 
-    topics = [topic.name for topic in os.scandir(os.getcwd() + '/backend/src')
-              if topic.is_dir() and topic.name != '__pycache__']
-    sub_topics = [[sub_topic.name for sub_topic in os.scandir(os.getcwd() + '/backend/src/' + topic)
-                   if sub_topic.is_dir() and sub_topic.name != '__pycache__'] for topic in topics]
+    topics = ['Supervised_Learning', 'Unsupervised_Learning', 'Neural_Networks', 'Reinforcement_Learning']
+    sub_topics = [['Simple_Linear_Regression', ], [], [], []]
 
     return jsonify(list(zip(topics, sub_topics)))
 
@@ -40,6 +38,17 @@ def get_linear_regression_plots() -> Response:
                                                   no_data_points=input_data['dataPoints'],
                                                   is_linearly_increasing=input_data['linearlyIncreasing'],
                                                   no_epochs=input_data['epochs'])
+
+    temp_queue = Queue()
+
+    def _get_animation(vizualizer_object):
+        anim = vizualizer_object.visualize()
+        jshtml = anim.to_jshtml()
+        temp_queue.put(jshtml)
+
+    p1 = Process(target=_get_animation, args=(vizualizer,))
+    p1.start()
+
     plt.switch_backend('agg')
 
     _ = vizualizer.show_data(return_fig=True)
@@ -78,6 +87,11 @@ def get_linear_regression_plots() -> Response:
     output1.seek(0)
     my_base64_jpgData = base64.b64encode(output1.read())
     output['cost history'] = str(my_base64_jpgData)
+
+    output['animation_jshtml'] = temp_queue.get()
+
+    p1.join()
+    del temp_queue
 
     return jsonify(output)
 
