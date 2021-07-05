@@ -87,7 +87,7 @@ def get_linear_regression_animation():
     vizualizer = SimpleLinearRegressionVisualizer()
     _ = vizualizer.visualize(save=True)
 
-    return send_file('Simple_Linear_Regression_Visualization.gif', mimetype='image/gif')
+    return send_file('../Simple_Linear_Regression_Visualization.gif', mimetype='image/gif')
 
 
 if __name__ == '__main__':
