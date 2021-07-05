@@ -2,7 +2,7 @@ import base64
 import io
 
 import matplotlib.pyplot as plt
-from flask import Flask, jsonify, Response, request
+from flask import Flask, jsonify, Response, request, send_file
 from flask_cors import CORS, cross_origin
 
 # noinspection PyUnresolvedReferences
@@ -85,10 +85,9 @@ def get_linear_regression_animation():
 
     plt.switch_backend('agg')
     vizualizer = SimpleLinearRegressionVisualizer()
-    anim = vizualizer.visualize()
-    jshtml = anim.to_jshtml()
+    _ = vizualizer.visualize(save=True)
 
-    return jsonify({"animation_html": jshtml})
+    return send_file('Simple_Linear_Regression_Visualization.gif', mimetype='image/gif')
 
 
 if __name__ == '__main__':
