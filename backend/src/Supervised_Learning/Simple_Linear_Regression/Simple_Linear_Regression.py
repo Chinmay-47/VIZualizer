@@ -65,6 +65,13 @@ class SimpleLinearRegressionVisualizer:
         self._no_epochs = no_epochs
 
     @property
+    def random_state(self) -> int:
+        """
+        Random state used to generate all initial values for all parameters.
+        """
+        return self.__random_state
+
+    @property
     def data_points(self) -> np.ndarray:
         """
         Data points used to perform and visualize Linear Regression.
