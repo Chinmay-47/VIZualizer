@@ -1,7 +1,8 @@
 <div class="container-fluid linear-regression-container">
     <div style="display: inline-flex; justify-content: center; width: 100%;" class="page-header">
         <div class="row no-gutters">
-            <h3 style="margin-bottom: 5px; font-weight: bold; font-size: x-large;" class="page-title">Linear Regression
+            <h3 style="margin-bottom: 5px; font-weight: bold; font-size: x-large;" class="page-title">Simple Linear
+                Regression
             </h3>
         </div>
     </div>
@@ -11,10 +12,8 @@
     <div class="page-container filters">
         <div class="row">
             <div class="col-12">
-                <button
-                    matTooltip="Learn about linear regression"
-                    style="margin-right: 20px; float: right;" mat-raised-button color="primary"
-                    class="ml-2">
+                <button matTooltip="Learn about linear regression" style="margin-right: 20px; float: right;"
+                    mat-raised-button color="primary" class="ml-2" (click)="displayAnimation()">
                     Learn
                 </button>
                 <form ngValidate #linearRegressionForm="ngForm" (ngSubmit)="linearRegression()">
@@ -73,5 +72,5 @@
     <img class="plots" *ngIf="displayPlots" [src]="imagePathRegressionComparison" alt="Regression comparison">
     <img class="plots" *ngIf="displayPlots" [src]="imagePathCostHistory" alt="Cost history">
     <img class="plots" *ngIf="displayPlots" [src]="imagePathRegressionProgression" alt="Regression progression">
-    <div *ngIf="displayAnimationplot"  [innerHTML]="animationPath | noSanitize"></div>
+    <div *ngIf="displayAnimationplot" [innerHTML]="animationHTML | noSanitize"></div>
 </div>

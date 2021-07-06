@@ -61,7 +61,7 @@ export class AppComponent implements OnInit {
           children: []
         }
         let innerResponseHolder: any = responseHolder[i];
-        sideNavData.displayName = (("" + innerResponseHolder[0]).replace("_", " "))
+        sideNavData.displayName = ((("" + innerResponseHolder[0]).split("_")).join(" "))
         sideNavData.route = "" + innerResponseHolder[0]
         for (let j = 0; j < innerResponseHolder[1].length; j++) {
           let tempSideNavData: NavItem =
@@ -71,7 +71,7 @@ export class AppComponent implements OnInit {
             route: '',
             children: []
           }
-          tempSideNavData.displayName = (("" + innerResponseHolder[1][j]).replace("_", " "))
+          tempSideNavData.displayName = ((("" + innerResponseHolder[1][j]).split("_")).join(" "))
           tempSideNavData.route = ("" + innerResponseHolder[0] + "/" + innerResponseHolder[1][j])
           sideNavData.children?.push(tempSideNavData)
         }

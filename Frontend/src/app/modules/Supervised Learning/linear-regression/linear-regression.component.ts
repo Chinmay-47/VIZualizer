@@ -1,7 +1,7 @@
-import { Component, OnInit, Pipe, PipeTransform } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { LinearRegressionService } from 'src/app/services/api/Supervised Learning/linear-regression.service';
 import { linearRegression } from './linear-regression.model';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-linear-regression',
@@ -17,7 +17,8 @@ export class LinearRegressionComponent implements OnInit {
     epochs: 10000,
     dataPoints: 20,
     randomize: false,
-    linearlyIncreasing: false
+    linearlyIncreasing: false,
+    randomState: 0
   }
   displayPlots: boolean = false;
   displayAnimationplot: boolean = false;
@@ -26,8 +27,10 @@ export class LinearRegressionComponent implements OnInit {
   imagePathRegressionComparison: any;
   imagePathCostHistory: any;
   imagePathRegressionProgression: any;
+  animationHTML: string = "";
   animationPath: any;
-  
+  randomState: number = 0;
+
 
   ngOnInit(): void {
   }
@@ -48,16 +51,17 @@ export class LinearRegressionComponent implements OnInit {
       this.imagePathCostHistory = this._sanitizer.bypassSecurityTrustResourceUrl('data:image/jpg;base64,' + costHistory);
       this.imagePathRegressionProgression = this._sanitizer.bypassSecurityTrustResourceUrl('data:image/jpg;base64,' + progression);
       this.displayPlots = true;
-      this.displayAnimation()
+      this.randomState = responseHolder["random state"]
     })
   }
 
   displayAnimation() {
-    let obs = this.linearRegressionService.getAnimation()
+    this.linearRegressionObj.randomize = false;
+    this.linearRegressionObj.randomState = this.randomState;
+    let obs = this.linearRegressionService.getAnimation(this.linearRegressionObj)
     obs.subscribe((response) => {
-      console.log(response)
       let responseHolder: any = response;
-      this.animationPath = responseHolder["html_to_render"]
+      this.animationHTML = responseHolder["html_to_render"];
       this.displayAnimationplot = true;
     })
   }

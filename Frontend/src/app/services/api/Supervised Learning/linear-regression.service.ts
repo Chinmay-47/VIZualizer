@@ -12,7 +12,7 @@ export class LinearRegressionService {
     return this.http.post("http://192.168.1.8:3001/get-linear-regression-plots", obj);
   }
 
-  getAnimation() {
-    return this.http.get("http://192.168.1.8:3001/get-linear-regression-animation");
+  getAnimation(obj: any) {
+    return this.http.post("http://192.168.1.8:3001/get-linear-regression-animation", obj);
   }
 }
