@@ -2,7 +2,7 @@ import base64
 import io
 
 import matplotlib.pyplot as plt
-from flask import Flask, jsonify, Response, request, send_file
+from flask import Flask, jsonify, Response, request
 from flask_cors import CORS, cross_origin
 
 # noinspection PyUnresolvedReferences
@@ -38,6 +38,8 @@ def get_linear_regression_plots() -> Response:
                                                   is_linearly_increasing=input_data['linearlyIncreasing'],
                                                   no_epochs=input_data['epochs'])
     plt.switch_backend('agg')
+
+    output['random state'] = vizualizer.random_state
 
     _ = vizualizer.show_data(return_fig=True)
     output1 = io.BytesIO()
@@ -79,15 +81,22 @@ def get_linear_regression_plots() -> Response:
     return jsonify(output)
 
 
-@viz.route('/get-linear-regression-animation', methods=['GET'])
+@viz.route('/get-linear-regression-animation', methods=['POST'])
 @cross_origin(supports_credentials=True)
 def get_linear_regression_animation():
 
+    input_data = request.get_json(force=True)
+    vizualizer = SimpleLinearRegressionVisualizer(randomize=input_data['randomize'],
+                                                  learning_rate=input_data['learningRate'],
+                                                  no_data_points=input_data['dataPoints'],
+                                                  is_linearly_increasing=input_data['linearlyIncreasing'],
+                                                  no_epochs=input_data['epochs'],
+                                                  random_state=input_data['randomState'])
     plt.switch_backend('agg')
-    vizualizer = SimpleLinearRegressionVisualizer()
-    _ = vizualizer.visualize(save=True)
+    anim = vizualizer.visualize()
+    html_to_render = anim.to_html5_video()
 
-    return send_file('../Simple_Linear_Regression_Visualization.gif', mimetype='image/gif')
+    return jsonify({'html_to_render': html_to_render})
 
 
 if __name__ == '__main__':
