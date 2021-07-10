@@ -12,7 +12,7 @@ from src.utils import (DataPointsGenerator, timer, clear_prev_plots, set_default
 
 class SimpleLinearRegressionVisualizer:
     """
-    Performs and Visualizes Linear Regression.
+    Performs and Visualizes Simple Linear Regression.
     """
 
     def __init__(self, randomize: Optional[bool] = False, learning_rate: Optional[float] = 0.001,
