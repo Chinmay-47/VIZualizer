@@ -2,12 +2,13 @@ from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.animation import FuncAnimation
-from tqdm import tqdm
+from matplotlib.animation import FuncAnimation, FFMpegWriter
+from matplotlib.figure import Figure
 
 # noinspection PyUnresolvedReferences
 from src.utils import (DataPointsGenerator, timer, clear_prev_plots, set_default_labels, clear_plots,
                        return_or_save_figure)
+from tqdm import tqdm
 
 
 class SimpleLinearRegressionVisualizer:
@@ -51,8 +52,8 @@ class SimpleLinearRegressionVisualizer:
 
         self._data_points: np.ndarray = self._dpgen.gen_linear2D(no_of_points=self._no_data_points,
                                                                  is_increasing=self._is_linearly_increasing)
-        self._x_values: np.ndarray = np.array(list(zip(*self._data_points))[0])
-        self._y_values: np.ndarray = np.array(list(zip(*self._data_points))[1])
+        self._x_values: np.ndarray = self._data_points[:, 0]
+        self._y_values: np.ndarray = self._data_points[:, 1]
         self._theta1: float = self._dpgen.gen_float()
         self._theta0: float = self._dpgen.gen_float()
         self._learning_rate: float = learning_rate
@@ -132,8 +133,7 @@ class SimpleLinearRegressionVisualizer:
         """
         Y-axis values predicted with current weights.
         """
-        return np.array(list(zip(*self._dpgen.gen_line_given_x(x_values=self._x_values, slope=self._theta1,
-                                                               intercept=self._theta0)))[1])
+        return self.current_regression_line[:, 1]
 
     @property
     def cost(self) -> float:
@@ -239,7 +239,7 @@ class SimpleLinearRegressionVisualizer:
     @return_or_save_figure
     @set_default_labels
     @clear_prev_plots
-    def show_data(self, **kwargs) -> Optional[plt.figure]:
+    def show_data(self, **kwargs) -> Optional[Figure]:
         """
         Shows a plot of the data points used to perform linear regression.
         """
@@ -255,7 +255,7 @@ class SimpleLinearRegressionVisualizer:
     @return_or_save_figure
     @set_default_labels
     @clear_prev_plots
-    def show_initial_regression_line(self, include_data: Optional[bool] = True, **kwargs) -> Optional[plt.figure]:
+    def show_initial_regression_line(self, include_data: Optional[bool] = True, **kwargs) -> Optional[Figure]:
         """
         Shows a plot of the initial regression line with or without data.
         """
@@ -264,8 +264,7 @@ class SimpleLinearRegressionVisualizer:
         fig, ax = plt.subplots()
         if include_data:
             ax.scatter(self._x_values, self._y_values, marker='*', c='red')
-        ax.plot(list(zip(*self._initial_regression_line))[0],
-                list(zip(*self._initial_regression_line))[1], c='blue')
+        ax.plot(self._initial_regression_line[:, 0], self._initial_regression_line[:, 1], c='blue')
         plt.title("Initial Regression Line")
 
         if kwargs['return_fig']:
@@ -274,7 +273,7 @@ class SimpleLinearRegressionVisualizer:
     @return_or_save_figure
     @set_default_labels
     @clear_prev_plots
-    def show_current_regression_line(self, include_data: Optional[bool] = True, **kwargs) -> Optional[plt.figure]:
+    def show_current_regression_line(self, include_data: Optional[bool] = True, **kwargs) -> Optional[Figure]:
         """
         Shows a plot of the current regression line with or without data.
         """
@@ -283,8 +282,7 @@ class SimpleLinearRegressionVisualizer:
         fig, ax = plt.subplots()
         if include_data:
             ax.scatter(self._x_values, self._y_values, marker='*', c='red')
-        ax.plot(list(zip(*self.current_regression_line))[0],
-                list(zip(*self.current_regression_line))[1], c='blue')
+        ax.plot(self.current_regression_line[:, 0], self.current_regression_line[:, 1], c='blue')
         plt.title("Current Regression Line")
 
         if kwargs['return_fig']:
@@ -293,7 +291,7 @@ class SimpleLinearRegressionVisualizer:
     @return_or_save_figure
     @set_default_labels
     @clear_prev_plots
-    def show_regression_line_comparison(self, include_data: Optional[bool] = True, **kwargs) -> Optional[plt.figure]:
+    def show_regression_line_comparison(self, include_data: Optional[bool] = True, **kwargs) -> Optional[Figure]:
         """
         Shows a plot of the current regression line with or without data.
         """
@@ -302,10 +300,8 @@ class SimpleLinearRegressionVisualizer:
         fig, ax = plt.subplots()
         if include_data:
             ax.scatter(self._x_values, self._y_values, marker='*', c='red')
-        ax.plot(list(zip(*self._initial_regression_line))[0],
-                list(zip(*self._initial_regression_line))[1], c='blue', label="Intial")
-        ax.plot(list(zip(*self.current_regression_line))[0],
-                list(zip(*self.current_regression_line))[1], c='green', label="Trained")
+        ax.plot(self._initial_regression_line[:, 0], self._initial_regression_line[:, 1], c='blue', label="Intial")
+        ax.plot(self.current_regression_line[:, 0], self.current_regression_line[:, 1], c='green', label="Trained")
         plt.title("Initial Regression Line vs Trained Regression Line")
         ax.legend()
 
@@ -314,7 +310,7 @@ class SimpleLinearRegressionVisualizer:
 
     @return_or_save_figure
     @clear_prev_plots
-    def show_regression_line_progression(self, include_data: Optional[bool] = True, **kwargs) -> Optional[plt.figure]:
+    def show_regression_line_progression(self, include_data: Optional[bool] = True, **kwargs) -> Optional[Figure]:
         """
         Shows a collage of the regression line progression through training.
         """
@@ -325,7 +321,7 @@ class SimpleLinearRegressionVisualizer:
         if include_data:
             [axis.scatter(self._x_values, self._y_values, marker='*', c='red') for axis in _all_ax]
 
-        ax1.plot(list(zip(*self._initial_regression_line))[0], list(zip(*self._initial_regression_line))[1], c='green')
+        ax1.plot(self._initial_regression_line[:, 0], self._initial_regression_line[:, 1], c='green')
         ax1.set_title("No Training",  fontsize=8)
 
         _weights = []
@@ -333,7 +329,7 @@ class SimpleLinearRegressionVisualizer:
             _slope = self.weights_history[((self.weights_history.shape[0] - 1)//5) * i][0]
             _intercept = self.weights_history[((self.weights_history.shape[0] - 1)//5) * i][1]
             _curr_line = self._dpgen.gen_line(slope=_slope, intercept=_intercept, no_points=self._no_data_points)
-            _all_ax[i].plot(list(zip(*_curr_line))[0], list(zip(*_curr_line))[1], c='green')
+            _all_ax[i].plot(_curr_line[:, 0], _curr_line[:, 1], c='green')
             _all_ax[i].set_title("{}% Trained".format(i * 20), fontsize=8)
 
         fig.suptitle("Regression Line Progression", fontsize='x-large')
@@ -343,7 +339,7 @@ class SimpleLinearRegressionVisualizer:
 
     @return_or_save_figure
     @clear_prev_plots
-    def show_cost_history(self, **kwargs) -> Optional[plt.figure]:
+    def show_cost_history(self, **kwargs) -> Optional[Figure]:
         """
         Shows a plot of the cost through the history of training.
         """
@@ -374,12 +370,10 @@ class SimpleLinearRegressionVisualizer:
         fig, ax = plt.subplots()
         if show_data:
             ax.scatter(self._x_values, self._y_values, marker='*', c='red')
-        line, = ax.plot(list(zip(*self.current_regression_line))[0],
-                        list(zip(*self.current_regression_line))[1],
+        line, = ax.plot(self.current_regression_line[:, 0], self.current_regression_line[:, 1],
                         scaley=False, scalex=False, c='green', label="Trained")
         if show_initial:
-            ax.plot(list(zip(*self.initial_regression_line))[0], list(zip(*self.initial_regression_line))[1],
-                    c='blue', label="Intial")
+            ax.plot(self._initial_regression_line[:, 0], self._initial_regression_line[:, 1], c='blue', label="Intial")
         ax.legend()
 
         def _animate(i):
@@ -394,13 +388,13 @@ class SimpleLinearRegressionVisualizer:
             else:
                 [self._update_weights() for _ in range(int(0.02 * self._no_epochs))]
 
-            line.set_ydata(list(zip(*self.current_regression_line))[1])
+            line.set_ydata(self.current_regression_line[:, 1])
             return line,
 
         @set_default_labels
         def _init_func():
             self.reset()
-            line.set_ydata(list(zip(*self.current_regression_line))[1])
+            line.set_ydata(self.current_regression_line[:, 1])
             return line,
 
         animation = FuncAnimation(fig, _animate, interval=1, blit=True, save_count=50, init_func=_init_func,
@@ -408,7 +402,8 @@ class SimpleLinearRegressionVisualizer:
         plt.show()
 
         if save:
-            animation.save("Simple_Linear_Regression_Visualization.gif", writer="Pillow", fps=30, bitrate=-1)
+            Writer = FFMpegWriter(fps=30, codec='libx264', bitrate=-1)
+            animation.save("Simple_Linear_Regression_Visualization.mp4", writer=Writer)
             clear_plots()
             return
 
