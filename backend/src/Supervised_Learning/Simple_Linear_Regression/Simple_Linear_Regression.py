@@ -228,13 +228,14 @@ class SimpleLinearRegressionVisualizer:
         if not isinstance(epochs, int):
             raise TypeError("Number of epochs must be an integer.")
 
-        for _ in tqdm(range(epochs)):
+        # Initial cost
+        if not self._cost_history:
             self._cost_history.append(self.cost)
+
+        for _ in tqdm(range(epochs)):
             self._update_weights()
             self._weights_history.append((self._theta1, self._theta0))
-
-        # Final cost
-        self._cost_history.append(self.cost)
+            self._cost_history.append(self.cost)
 
     @return_or_save_figure
     @set_default_labels
