@@ -56,6 +56,7 @@ export class LinearRegressionComponent implements OnInit {
   }
 
   displayAnimation() {
+    this.displayAnimationplot = false;
     this.linearRegressionObj.randomize = false;
     this.linearRegressionObj.randomState = this.randomState;
     let obs = this.linearRegressionService.getAnimation(this.linearRegressionObj)

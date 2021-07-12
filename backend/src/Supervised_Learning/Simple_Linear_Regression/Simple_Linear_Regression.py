@@ -398,8 +398,8 @@ class SimpleLinearRegressionVisualizer:
             line.set_ydata(self.current_regression_line[:, 1])
             return line,
 
-        animation = FuncAnimation(fig, _animate, interval=1, blit=True, save_count=50, init_func=_init_func,
-                                  repeat=True, frames=90, repeat_delay=500)
+        animation = FuncAnimation(fig, _animate, interval=40, blit=True, save_count=50, init_func=_init_func,
+                                  repeat=True, frames=100, repeat_delay=8000)
         plt.show()
 
         if save:
