@@ -41,12 +41,12 @@ def get_linear_regression_plots() -> Response:
 
     output['random state'] = vizualizer.random_state
 
-    _ = vizualizer.show_data(return_fig=True)
-    output1 = io.BytesIO()
-    plt.savefig(output1, format='jpg')
-    output1.seek(0)
-    my_base64_jpgData = base64.b64encode(output1.read())
-    output['data points'] = str(my_base64_jpgData)
+    fig = vizualizer.show_data(return_fig=True)
+    # output1 = io.BytesIO()
+    # plt.savefig(output1, format='jpg')
+    # output1.seek(0)
+    # my_base64_jpgData = base64.b64encode(output1.read())
+    output['data points'] = fig.to_html()
 
     _ = vizualizer.show_initial_regression_line(return_fig=True)
     output1 = io.BytesIO()
